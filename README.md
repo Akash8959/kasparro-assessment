@@ -1,6 +1,6 @@
 # Kasparro FSE Intern Pathway Assessment
 
-Repo link: <PASTE GITHUB URL HERE>
+Repo link: https://github.com/Akash8959/kasparro-assessment
 
 An agentic factual claim extraction and verification pipeline that processes long AI-generated answers about speaker products, extracts factual claim sentences, fetches catalogue facts via live function calling, and classifies each claim as `supported`, `contradicted`, or `unknown`.
 
