@@ -115,6 +115,15 @@ def run_evaluation(
         # Save checkpoint after each answer
         save_checkpoint(split, version, {"run_id": active_run_id, "results": results_by_id})
 
+        if (idx + 1) % 10 == 0 or (idx + 1) == len(answers):
+            completed_count = len(results_by_id)
+            err_count = sum(1 for r in results_by_id.values() if r.get("status") == "error")
+            claims_count = sum(len(r.get("claims", [])) for r in results_by_id.values() if r.get("status") == "success")
+            logger.info(
+                f"=== PROGRESS MILESTONE [{idx+1}/{len(answers)}]: "
+                f"Saved answers: {completed_count}, Errors: {err_count}, Accepted claims: {claims_count} ==="
+            )
+
         if delay_between_answers > 0 and idx < len(answers) - 1:
             time.sleep(delay_between_answers)
 
