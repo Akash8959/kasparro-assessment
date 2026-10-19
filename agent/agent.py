@@ -36,7 +36,7 @@ from agent.validate import validate_claims, ClaimValidationError
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = "gemini-3.5-flash"
+DEFAULT_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_TIMEOUT_SECONDS = 60.0
 MAX_TURNS = 3
 

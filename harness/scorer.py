@@ -43,8 +43,8 @@ def score_predictions(
                 c_copy["answer_id"] = a["answer_id"]
                 accepted_predictions.append(c_copy)
 
-    # For check split (A41-A50): gold is private, all quality metrics must be None
-    if is_check_split:
+    # For check split (A41-A50) or when gold is None: all quality metrics must be None
+    if is_check_split or gold_claims is None:
         return {
             "is_check_split": True,
             "total_answers": total_answers,

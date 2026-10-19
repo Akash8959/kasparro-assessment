@@ -45,9 +45,9 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/kasparro_eval
 ## 2. Configuration & Model Settings
 
 - **Provider**: Google Gemini via `google-genai` SDK
-- **Model**: `gemini-3.8-flash`
+- **Model**: `gemini-3.1-flash-lite`
 - **Temperature**: `0.0`
-- **Provider Request Timeout**: `60.0` seconds (configured via `http_options=types.HttpOptions(timeout=60.0)`)
+- **Provider Request Timeout**: `60.0` seconds (configured via `types.HttpOptions(timeout=60000)` in milliseconds)
 - **Max Model Turns**: 3 turns per answer
 - **Tool Protocol**: Function calling with `get_brand_facts(brand_id)`
 - **Fact Version**: `speaker-catalogue-v4`
@@ -77,6 +77,11 @@ python -m harness.run_eval --version v2 --split check
 ```
 *(Check split outputs predictions and error records only; quality metrics remain null).*
 
+### Run All Evaluations Sequentially
+```bash
+python scripts/run_all_evals.py
+```
+
 ---
 
 ## 4. Running the FastAPI Service
@@ -87,16 +92,22 @@ uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### Endpoints
-- `POST /classify`: Classify a single answer. Input: `answer_id`, `brand_id`, `question`, `ai_answer`, `agent_version`.
+- `POST /classify`: Classify a single answer. Input: `answer_id`, `brand_id`, `question`, `ai_answer`, `agent_version`. Returns 422 if any gold/benchmark fields are supplied.
 - `POST /evaluation-runs`: Trigger an evaluation run across a CSV split (`development` or `check`).
-- `GET /evaluation-runs/{id}`: Retrieve full joined evaluation run details from PostgreSQL or stored reports.
+- `GET /evaluation-runs/{id}`: Retrieve evaluation run details. Reads from stored JSON reports in `reports/` (or PostgreSQL if connected).
+
+### Database Persistence & Script
+Evaluation runs are saved as JSON files in `reports/`. To optionally load them into a PostgreSQL database once credentials are configured:
+```bash
+python scripts/load_reports_to_db.py
+```
 
 ---
 
 ## 5. Running Tests
 
-Run the test suite via pytest:
+Run the complete test suite via pytest:
 ```bash
 pytest tests/ -v
 ```
-All tests use deterministic mocks and fake providers to verify edge cases without incurring API usage.
+Output is saved to `reports/test_output.txt`. All tests use deterministic mocks and fake providers to verify edge cases without incurring API usage.

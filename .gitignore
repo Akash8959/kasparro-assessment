@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 reports/*.tmp
 checkpoint_*.json
+reports/checkpoint_*.json
 *.egg-info/
 dist/
 build/

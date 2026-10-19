@@ -1,0 +1,70 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.7.0 -- E:\kasparro-assessment\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: E:\kasparro-assessment
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.15.1
+collecting ... collected 44 items
+
+tests/test_api_and_db.py::test_api_classify_rejects_forbidden_gold_fields PASSED [  2%]
+tests/test_api_and_db.py::test_api_classify_unknown_brand_returns_404 PASSED [  4%]
+tests/test_api_and_db.py::test_api_classify_valid_mocked_success PASSED  [  6%]
+tests/test_api_and_db.py::test_api_classify_provider_error_maps_to_502 PASSED [  9%]
+tests/test_api_and_db.py::test_api_classify_timeout_maps_to_504 PASSED   [ 11%]
+tests/test_api_and_db.py::test_api_get_run_invalid_uuid_returns_422 PASSED [ 13%]
+tests/test_api_and_db.py::test_api_get_run_nonexistent_uuid_returns_404 PASSED [ 15%]
+tests/test_api_and_db.py::test_api_get_run_existing_from_disk_fallback PASSED [ 18%]
+tests/test_api_and_db.py::test_sql_schema_syntax_and_tables PASSED       [ 20%]
+tests/test_api_and_db.py::test_db_parameterized_query_mock PASSED        [ 22%]
+tests/test_api_and_db.py::test_db_live_postgres_persistence SKIPPED      [ 25%]
+tests/test_core.py::test_loader_csv_hashes PASSED                        [ 27%]
+tests/test_core.py::test_loader_preserves_raw_ai_answer PASSED           [ 29%]
+tests/test_core.py::test_loader_brand_facts PASSED                       [ 31%]
+tests/test_core.py::test_facts_tool_valid_and_invalid PASSED             [ 34%]
+tests/test_core.py::test_spans_offset_resolution PASSED                  [ 36%]
+tests/test_core.py::test_spans_missing_quote_raises PASSED               [ 38%]
+tests/test_core.py::test_validate_claims_strict PASSED                   [ 40%]
+tests/test_core.py::test_scorer_arithmetic_spec_example PASSED           [ 43%]
+tests/test_csv_and_spans.py::test_csv_preserves_raw_ai_answer_formatting PASSED [ 45%]
+tests/test_csv_and_spans.py::test_brand_facts_schema_and_types PASSED    [ 47%]
+tests/test_csv_and_spans.py::test_unicode_code_point_span_offsets PASSED [ 50%]
+tests/test_csv_and_spans.py::test_spans_duplicate_quote_sequential_tracking PASSED [ 52%]
+tests/test_csv_and_spans.py::test_spans_missing_quote_raises_span_error PASSED [ 54%]
+tests/test_csv_and_spans.py::test_validate_claims_valid_cases PASSED     [ 56%]
+tests/test_csv_and_spans.py::test_validate_claims_empty_is_valid PASSED  [ 59%]
+tests/test_csv_and_spans.py::test_validate_claims_overlapping_spans_rejected PASSED [ 61%]
+tests/test_csv_and_spans.py::test_validate_claims_leading_trailing_whitespace_quote PASSED [ 63%]
+tests/test_csv_and_spans.py::test_validate_claims_invalid_label_rejected PASSED [ 65%]
+tests/test_csv_and_spans.py::test_validate_claims_unknown_fact_id_rejected PASSED [ 68%]
+tests/test_csv_and_spans.py::test_validate_claims_excessive_reason_sentences_rejected PASSED [ 70%]
+tests/test_fake_provider.py::test_provider_malformed_json_returns_answer_error PASSED [ 72%]
+tests/test_fake_provider.py::test_provider_unsupported_label_rejected PASSED [ 75%]
+tests/test_fake_provider.py::test_provider_invented_fact_id_rejected PASSED [ 77%]
+tests/test_fake_provider.py::test_provider_unknown_brand_rejected PASSED [ 79%]
+tests/test_fake_provider.py::test_provider_illegal_tool_call_rejected PASSED [ 81%]
+tests/test_fake_provider.py::test_provider_turn_exhaustion PASSED        [ 84%]
+tests/test_fake_provider.py::test_zero_benchmark_data_leakage PASSED     [ 86%]
+tests/test_scorer.py::test_scorer_arithmetic_spec_benchmark PASSED       [ 88%]
+tests/test_scorer.py::test_scorer_perfect_evaluation PASSED              [ 90%]
+tests/test_scorer.py::test_scorer_zero_predictions_all_missed PASSED     [ 93%]
+tests/test_scorer.py::test_scorer_wrong_labels_penalty PASSED            [ 95%]
+tests/test_scorer.py::test_scorer_answer_level_error_penalizes_metrics PASSED [ 97%]
+tests/test_scorer.py::test_scorer_check_split_no_gold_returns_null PASSED [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  E:\kasparro-assessment\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/test_api_and_db.py::test_api_get_run_invalid_uuid_returns_422
+  E:\kasparro-assessment\.venv\Lib\site-packages\fastapi\routing.py:372: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+    return await dependant.call(**values)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\test_api_and_db.py:278: Live PostgreSQL instance not reachable (connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+Multiple connection attempts failed. All failures were:
+- host: 'localhost', port: '5432', hostaddr: '::1': connection failed: connection to server at "::1", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  password authentication failed for user "postgres"); skipping live test.
+================== 43 passed, 1 skipped, 2 warnings in 1.50s ==================
