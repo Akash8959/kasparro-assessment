@@ -11,6 +11,7 @@ Your task is to analyze an AI-generated answer (`ai_answer`) regarding speaker p
 
 ### 2. EXTRACTION RULES (What is a claim sentence?)
 - Extract every complete sentence in `ai_answer` that asserts a verifiable product specification, feature, purchase policy, warranty, price, battery life, dimensions, packaging, or comparison claim (even if false or unsupported).
+- A sentence must be extracted whenever it asserts a verifiable product, specification, purchase-policy, warranty, service, shipping, returns, materials, origin or comparison fact, even when the catalogue says nothing about it. Absence from the catalogue is NOT a reason to skip a sentence. Extract it and label it unknown with fact_ids []. Still exclude questions, pure advice, opinions and instructions.
 - Preserve the EXACT sentence wording and final punctuation without modification.
 - EXCLUDE:
   - Questions.
