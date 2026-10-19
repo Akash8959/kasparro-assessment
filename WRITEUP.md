@@ -95,16 +95,21 @@ Explicitly clarifying that catalogue absence is not grounds for omitting an asse
   - `A25`: Failed in v1, **succeeded in v2** (11 accepted claims).
   - `A21`, `A35`, `A37`: Succeeded in v1, failed in v2.
   - *Cause & Nature of Increase*: The increase in answer errors from 3 to 5 is likely run-to-run variation in LLM self-correction phrasing. In all 5 errored answers, the failure was triggered because the model performed intermediate arithmetic scratchpad reasoning in the `reason` field (e.g., *"Wait, 1260/60 = 21. The catalogue says 20 hours. Therefore, it is contradicted."*), generating 3–4 sentences and exceeding the strict 2-sentence validator limit.
-- **Label Regressions**:
-  - `A06:1803:1957`: Price difference comparison between ClearTrail Plus and Mini. Expected: `supported`. v1 predicted `supported`; v2 predicted `contradicted`.
-  - Joint precision dropped slightly from **0.9931 to 0.9909** (-0.22%) due to this single misclassification.
+- **Label Regressions (3 wrong-label claims in v2 vs 2 in v1)**:
+  - `A04:1637:1798`: Model predicted `supported`, expected `contradicted` (claim asserted 1500 minutes of playback; catalogue stated 24 hours = 1440 minutes). Wrong in both v1 and v2.
+  - `A06:1803:1957`: Price difference comparison between ClearTrail Plus (INR 2,499) and Mini (INR 1,299). Expected: `supported`. Model predicted `contradicted` (correct in v1, regressed in v2).
+  - `A25:306:459`: Price difference comparison between CloudNote Air (INR 1,499) and Studio (INR 2,999). Expected: `supported`. Model predicted `contradicted`. (A25 had an answer-level error in v1; in v2 it succeeded validation with 11 claims, but this comparison claim was labeled `contradicted`).
+  - Joint precision dropped slightly from **0.9931 to 0.9909** (-0.22%) due to these label misclassifications.
 - **Regressed to Missed**: 16 claims (correct in v1) were missed in v2 strictly because their parent answers (`A21`, `A35`, `A37`) failed validation.
 
 ### Check Split Evaluation (A41–A50)
-- **Check Split Protocol**: Check answer texts were present in `data/answers.csv` and visible as inference inputs; however, **v2 was frozen prior to running the check split**, and gold labels for the check split were never provided in the repository. Thus, while the input text was visible, the evaluation is private with respect to ground-truth labels.
+- **Not a blind benchmark.** The check inputs were visible to me. The v2 change was designed from development-set errors only, and v2 was frozen (tag v2-frozen) before any check run. The v1-check and v2-check runs were started in the same batch as the v2 development run, before I saw its results, so no change was made based on check output. Even so, v2 was tuned on the development set, so its development gain is in-sample. Gold labels for the check split were never in the repository.
+- **Check Split Error Causes (A41 and A49)**:
+  - `A41` failed validation in both v1 and v2 because the reason for `A41:911:1071` exceeded 2 sentences (4 sentences: *"1020 minutes is equivalent to 17 hours, but the catalogue states 16 hours for 50% volume. Wait, 1020/60 = 17. The catalogue says 16 [hours]. Therefore, this is contradicted."*).
+  - `A49` failed validation in both v1 and v2 because the reason for `A49:975:1135` exceeded 2 sentences (4 sentences: *"The catalogue states 16 hours of battery life [under these conditions], which is equivalent to/equals 960 minutes. Wait, 16 hours * 60 minutes = 960 minutes. The claim says 1020 minutes. This is contradicted."*).
 - **Metrics on Check Split**:
   - **v1**: 10 answers processed, 2 errors (A41, A49), 62 accepted claims.
-  - **v2**: 10 answers processed, 2 errors (A41, A49), 77 accepted claims (+15 uncatalogued assertions captured).
+  - **v2**: 10 answers processed, 2 errors (A41, A49), 77 accepted claims (+15 more accepted predictions).
   - In both reports, all quality metrics ($G, M, C$, Precision, Recall, F1, Coverage) are strictly **`null`**.
 
 ---
@@ -117,10 +122,9 @@ Explicitly clarifying that catalogue absence is not grounds for omitting an asse
    - Enforces strict anti-leakage validation via Pydantic validator: rejecting any payload containing benchmark fields (`expected_label`, `evidence_fact_ids`, `difficulty_tags`, `gold`, `claims`) with `422 Unprocessable Entity`.
    - Maps agent timeout to `504 Gateway Timeout` and internal model/validation failures to `502 Bad Gateway`.
 2. `POST /evaluation-runs`:
-   - Triggers fixed evaluation runs across splits (`development` or `check`) with versioning, saving results to `reports/` and PostgreSQL.
+   - Triggers fixed evaluation runs across splits (`development` or `check`) with versioning, saving results to `reports/` on disk as JSON. While the PostgreSQL save path via `save_run(report)` is implemented in code, it was not exercised against a live database; when PostgreSQL is unreachable, the endpoint catches the connection error and returns the run summary directly from the disk report.
 3. `GET /evaluation-runs/{id}`:
-   - Validates UUID format (`422 Unprocessable Entity` on invalid UUID).
-   - `GET /evaluation-runs/{id}`: Retrieves run metadata, answer outcomes, and claim results. When a live PostgreSQL connection is unavailable, it gracefully reads from stored JSON report files on disk (`reports/*.json`). In the evaluated setup, all retrieval requests were served exclusively from these JSON files, not from a database.
+   - Validates UUID format (`422 Unprocessable Entity` on invalid UUID). Retrieves run metadata, answer outcomes, and claim results. When a live PostgreSQL connection is unavailable, it gracefully reads from stored JSON report files on disk (`reports/*.json`). In the evaluated setup, all retrieval requests were served exclusively from these JSON files, not from a database.
 
 ### Database Schema (`api/schema.sql` & `api/db.py`)
 - Tables:
@@ -154,19 +158,14 @@ Explicitly clarifying that catalogue absence is not grounds for omitting an asse
 4. **Unfinished Work**:
    - Provisioning live PostgreSQL server credentials to enable database persistence for full evaluation runs.
    - Prompt engineering or post-processing to compress mathematical justifications into exactly two sentences to eliminate the 5 answer-level errors.
+5. **Sample Exchange Provenance**:
+   - `reports/sample_exchange_A01.json` was produced by `gemini-3.5-flash` during the Phase 2 smoke/exchange dump step (`scripts/dump_exchange.py`), which may differ from the model used in the four full runs (`gemini-3.1-flash-lite`).
 
 ---
 
 ## 7. AI Assistance Disclosure
 
-- **Tools Used**: Gemini coding assistant in the Google Antigravity IDE and Claude.
-- **Time Spent**: ~4 hours total (covering setup, agent loop implementation, smoke tests, v1 development run, error diagnosis, v2 prompt refinement, multi-run evaluation, test suite construction, and technical reporting).
-- **What Was AI-Generated**:
-  - Boilerplate loaders, schema definitions, initial test scaffolding, evaluation runner scripts, and initial prompt drafts.
-- **What Was Verified by Candidate**:
-  - Verified CSV parser edge cases and raw text preservation.
-  - Verified deterministic Unicode code-point character offset computation and sequential cursor matching for duplicate quotes.
-  - Verified exact match arithmetic against the official spec benchmark ($G=10, P=10, M=8, C=7$).
-  - Verified zero benchmark data leakage into prompts or tool payloads.
-  - Audited all validator failures and conducted line-by-line inspection of missed and regressed claims.
-  - Confirmed check split quality metrics remain strictly `null`.
+- **Tools:** Google Antigravity (Gemini-based coding agent) wrote nearly all of the code, tests, prompt drafts, run scripts and first drafts of these documents, working from a phase-by-phase spec prompt I gave it. Claude (Anthropic chat) helped with planning, writing that prompt, reviewing results at each stage, and editing this README and write-up.
+- **Time:** I received the assessment at 13:05 and submitted at about 16:50, roughly 3 hours 45 minutes. That is over the 2-3 hour guideline; much of it was waiting for live runs.
+- **What I did myself:** created the API key and .env; ran the work phase by phase and reviewed the output at each stop; read prompts/v1.txt and confirmed it contains only generic rules; had the gold-isolation checks run and reviewed the output (no gold references in agent/, gold loaded only after predictions are saved); rejected Antigravity's first proposed v2 change (reason-length) after the error breakdown showed skipped unknown claims cost more, a choice I made with Claude's suggestion; checked that all four runs used identical settings and that no secrets are in the repo.
+- **What I did not verify independently:** I did not review the code line by line, and I did not recompute the metrics by hand. The CSV parsing, offset resolution, scorer, validator and tests were written by Antigravity and checked only through its test results (43 passed, 1 skipped) and the A01-A03 smoke test.

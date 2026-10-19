@@ -1,5 +1,7 @@
 # Kasparro FSE Intern Pathway Assessment
 
+Repo link: <PASTE GITHUB URL HERE>
+
 An agentic factual claim extraction and verification pipeline that processes long AI-generated answers about speaker products, extracts factual claim sentences, fetches catalogue facts via live function calling, and classifies each claim as `supported`, `contradicted`, or `unknown`.
 
 ---
@@ -110,4 +112,4 @@ Run the complete test suite via pytest:
 ```bash
 pytest tests/ -v
 ```
-Output is saved to `reports/test_output.txt`. All tests use deterministic mocks and fake providers to verify edge cases without incurring API usage.
+Output is saved to `reports/test_output.txt`. All tests except the live PostgreSQL test use deterministic mocks and fake providers to verify edge cases without incurring API usage.
